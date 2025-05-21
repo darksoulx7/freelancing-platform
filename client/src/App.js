@@ -1,16 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import {
-  ThemeProvider, createTheme, CssBaseline, GlobalStyles, Container,
-  Paper, Box, Button, TextField, Typography, Grid, AppBar, Toolbar,
-  Drawer, Chip, Stack, List, ListItem, ListItemIcon, ListItemText,
-  CircularProgress, Alert, InputAdornment, IconButton, LinearProgress
+  Container, // ThemeProvider, createTheme, CssBaseline, GlobalStyles removed
+  Paper, Box, Typography, Grid, Chip, Stack,
+  CircularProgress, InputAdornment, IconButton, LinearProgress 
 } from '@mui/material';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   Home as HomeIcon, Work as WorkIcon, Chat as ChatIcon,
-  Person as PersonIcon, Logout as LogoutIcon, Add as AddIcon,
+  Person as PersonIcon, Add as AddIcon, // LogoutIcon removed
   Upload, Delete, InsertDriveFile
 } from '@mui/icons-material';
+import { LogOut } from 'lucide-react'; // Added for shadcn/ui compatible logout icon
 import { BrowserRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -55,9 +59,10 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <Container>
-          <Alert severity="error" sx={{ mt: 2 }}>
-            Something went wrong. Please refresh the page or try again later.
-          </Alert>
+          <div className="p-4 mt-2 bg-red-100 text-red-700 rounded-md">
+            <h3 className="font-bold">Error</h3>
+            <p>Something went wrong. Please refresh the page or try again later.</p>
+          </div>
         </Container>
       );
     }
@@ -212,7 +217,7 @@ const RegisterPage = () => {
     if (!values.role) {
       newErrors.role = 'Role is required';
     } else if (!['client', 'freelancer'].includes(values.role.toLowerCase())) {
-      newErrors.role = 'Role must be either client or freelancer';
+      newErrors.role = 'Role must be either client or freelancer. Please enter "client" or "freelancer".';
     }
 
     setErrors(newErrors);
@@ -253,91 +258,86 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Create Account
-        </Typography>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
         {errors.submit && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {errors.submit}
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {errors.submit}
+            </AlertDescription>
           </Alert>
         )}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Username"
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
               name="username"
               value={values.username}
               onChange={handleChange}
-              error={!!errors.username}
-              helperText={errors.username}
-              fullWidth
-              required
+              placeholder="Your username"
+              className={errors.username ? 'border-red-500' : ''}
               autoComplete="username"
               autoFocus
             />
-            <TextField
-              label="Email"
+            {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+          </div>
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               name="email"
               type="email"
               value={values.email}
               onChange={handleChange}
-              error={!!errors.email}
-              helperText={errors.email}
-              fullWidth
-              required
+              placeholder="your.email@example.com"
+              className={errors.email ? 'border-red-500' : ''}
               autoComplete="email"
             />
-            <TextField
-              label="Password"
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
               name="password"
               type="password"
               value={values.password}
               onChange={handleChange}
-              error={!!errors.password}
-              helperText={errors.password}
-              fullWidth
-              required
+              placeholder="••••••••"
+              className={errors.password ? 'border-red-500' : ''}
               autoComplete="new-password"
             />
-            <TextField
-              label="Role"
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          </div>
+          <div>
+            <Label htmlFor="role">Role (client/freelancer)</Label>
+            <Input
+              id="role"
               name="role"
-              select
               value={values.role}
               onChange={handleChange}
-              error={!!errors.role}
-              helperText={errors.role || "Select your role"}
-              fullWidth
-              required
-              SelectProps={{
-                native: true
-              }}
-            >
-              <option value="">Select a role</option>
-              <option value="client">Client</option>
-              <option value="freelancer">Freelancer</option>
-            </TextField>
-            <Button 
-              variant="contained" 
-              type="submit" 
-              fullWidth
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Creating Account...' : 'Create Account'}
-            </Button>
-            <Button 
-              variant="text" 
-              onClick={() => navigate('/login')}
-              disabled={isSubmitting}
-            >
-              Already have an account? Login
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
-    </Container>
+              placeholder="Enter 'client' or 'freelancer'"
+              className={errors.role ? 'border-red-500' : ''}
+            />
+            {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
+          </div>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
+          </Button>
+          <Button 
+            variant="link" 
+            onClick={() => navigate('/login')} 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            Already have an account? Login
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 };
 
@@ -418,62 +418,61 @@ const LoginPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Welcome Back
-        </Typography>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Welcome Back</h2>
         {errors.submit && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {errors.submit}
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {errors.submit}
+            </AlertDescription>
           </Alert>
         )}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Email"
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               name="email"
               type="email"
               value={values.email}
               onChange={handleChange}
-              error={!!errors.email}
-              helperText={errors.email}
-              fullWidth
-              required
+              placeholder="your.email@example.com"
+              className={errors.email ? 'border-red-500' : ''}
               autoComplete="email"
               autoFocus
             />
-            <TextField
-              label="Password"
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
               name="password"
               type="password"
               value={values.password}
               onChange={handleChange}
-              error={!!errors.password}
-              helperText={errors.password}
-              fullWidth
-              required
+              placeholder="••••••••"
+              className={errors.password ? 'border-red-500' : ''}
               autoComplete="current-password"
             />
-            <Button 
-              variant="contained" 
-              type="submit" 
-              fullWidth
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Signing in...' : 'Sign In'}
-            </Button>
-            <Button 
-              variant="text" 
-              onClick={() => navigate('/register')}
-              disabled={isSubmitting}
-            >
-              Don't have an account? Register
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
-    </Container>
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+          </div>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Signing In...' : 'Sign In'}
+          </Button>
+          <Button 
+            variant="link" 
+            onClick={() => navigate('/register')} 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            Don't have an account? Register
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 };
 
@@ -669,7 +668,7 @@ const ProjectDetails = () => {
 
   if (!project) {
     return (
-      <Alert severity="error">Project not found</Alert>
+      <div className="p-4 bg-red-100 text-red-700 rounded-md">Project not found</div>
     );
   }
 
@@ -783,9 +782,9 @@ const ProjectDetails = () => {
         <Box sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>Submit Proposal</Typography>
           {proposalErrors.submit && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
               {proposalErrors.submit}
-            </Alert>
+            </div>
           )}
           <Box component="form" onSubmit={submitProposal}>
             <Stack spacing={2}>
@@ -989,9 +988,9 @@ const CreateProject = () => {
         </Typography>
 
         {errors.submit && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
             {errors.submit}
-          </Alert>
+          </div>
         )}
 
         <Box component="form" onSubmit={handleSubmit}>
@@ -1251,9 +1250,9 @@ const Profile = () => {
         </Box>
 
         {errors.submit && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
             {errors.submit}
-          </Alert>
+          </div>
         )}
 
         {editMode ? (
@@ -1392,9 +1391,9 @@ const PaymentForm = ({ projectId, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
           {error}
-        </Alert>
+        </div>
       )}
       <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
         <CardElement options={{
@@ -1623,7 +1622,7 @@ const ChatSystem = () => {
             <Typography variant="h6">Chats</Typography>
             {!isConnected && <Chip size="small" color="error" label="Offline" />}
           </Box>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>}
           <Stack spacing={1}>
             {chats.map((chat) => {
               const otherUserObj = chat.participants.find(p => p.user._id !== user._id);
@@ -1749,88 +1748,67 @@ const ChatSystem = () => {
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const drawerWidth = 240;
 
   const navLinks = [
-    { icon: <HomeIcon />, label: 'Home', path: '/' },
-    { icon: <WorkIcon />, label: 'Projects', path: '/projects' },
-    { icon: <ChatIcon />, label: 'Messages', path: '/chat' },
-    { icon: <PersonIcon />, label: 'Profile', path: '/profile' }
+    { icon: <HomeIcon sx={{ color: 'inherit' }} />, label: 'Home', path: '/' },
+    { icon: <WorkIcon sx={{ color: 'inherit' }} />, label: 'Projects', path: '/projects' },
+    { icon: <ChatIcon sx={{ color: 'inherit' }} />, label: 'Messages', path: '/chat' },
+    { icon: <PersonIcon sx={{ color: 'inherit' }} />, label: 'Profile', path: '/profile' }
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h6" noWrap>
-            Freelance Platform
-          </Typography>
-          <Typography variant="subtitle1">
-            Welcome, {user?.username}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box'
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white p-4 shadow-md fixed top-0 left-0 right-0 z-50 flex justify-between items-center h-16">
+        <div className="text-xl font-semibold">Freelance Platform</div>
+        <div className="text-sm">Welcome, {user?.username}</div>
+      </header>
+
+      {/* Sidebar */}
+      <aside className="w-60 bg-gray-100 dark:bg-gray-850 p-4 border-r border-gray-200 dark:border-gray-700 fixed pt-16 h-full flex flex-col justify-between">
+        <nav className="mt-4">
+          <ul>
             {navLinks.map((link) => (
-              <ListItem button key={link.path} onClick={() => navigate(link.path)}>
-                <ListItemIcon>{link.icon}</ListItemIcon>
-                <ListItemText primary={link.label} />
-              </ListItem>
+              <li key={link.path} className="mb-2">
+                <button
+                  onClick={() => navigate(link.path)}
+                  className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 w-full text-left text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <span className="w-6 h-6 flex items-center justify-center">{link.icon}</span>
+                  <span>{link.label}</span>
+                </button>
+              </li>
             ))}
-            <ListItem button onClick={logout}>
-              <ListItemIcon>
-                <LogoutIcon color="error" />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+          </ul>
+        </nav>
+        <div className="mt-auto mb-4"> {/* Pushes logout to the bottom */}
+          <Button
+            variant="ghost"
+            onClick={logout}
+            className="w-full justify-start text-red-600 hover:bg-red-100 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-800 dark:hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <LogOut className="mr-3 h-5 w-5" />
+            Logout
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-grow p-6 pt-20 ml-60"> 
+        {/* pt-20 to offset header (h-16 -> 4rem = 64px, so 5rem = 80px), ml-60 to offset sidebar (w-60 -> 15rem = 240px) */}
         {children}
-      </Box>
-    </Box>
+      </main>
+    </div>
   );
 };
 
 const App = () => {
-  const theme = createTheme({
-    palette: {
-      mode: 'light',
-      primary: { main: '#1976d2' },
-      background: { default: '#f7f9fc' }
-    },
-    typography: {
-      fontFamily: 'Roboto, sans-serif'
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none'
-          }
-        }
-      }
-    }
-  });
+  // Theme object and ThemeProvider, CssBaseline, GlobalStyles are removed.
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <GlobalStyles styles={{ body: { backgroundColor: '#f7f9fc' } }} />
+    // <ThemeProvider theme={theme}> // Removed
+    //   <CssBaseline /> // Removed
+    //   <GlobalStyles styles={{ body: { backgroundColor: '#f7f9fc' } }} /> // Removed
       <ErrorBoundary>
         <BrowserRouter>
           <AuthProvider>
@@ -1871,7 +1849,7 @@ const App = () => {
           </AuthProvider>
         </BrowserRouter>
       </ErrorBoundary>
-    </ThemeProvider>
+    // </ThemeProvider> // Removed
   );
 };
 
